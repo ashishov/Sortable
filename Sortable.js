@@ -537,54 +537,65 @@
 			}
 		},
 
-		_emulateDragOver: function () {
-			if (touchEvt) {
-				if (this._lastX === touchEvt.clientX && this._lastY === touchEvt.clientY) {
-					return;
-				}
+        _emulateDragOver: function () {
+            if (touchEvt) {
+                var clientX = touchEvt.clientX;
+                var clientY = touchEvt.clientY;
+                if ('y' === this.options.axis) {
+                    var boundingClientRect = dragEl.getBoundingClientRect();
+                    clientX = boundingClientRect.left + boundingClientRect.width/2 ;
+                }
+                if ('x' === this.options.axis) {
+                    var boundingClientRect = dragEl.getBoundingClientRect();
+                    clientY = boundingClientRect.top + boundingClientRect.height/2 ;
+                }
 
-				this._lastX = touchEvt.clientX;
-				this._lastY = touchEvt.clientY;
+                if (this._lastX === clientX && this._lastY === clientY) {
+                    return;
+                }
 
-				if (!supportCssPointerEvents) {
-					_css(ghostEl, 'display', 'none');
-				}
+                this._lastX = clientX;
+                this._lastY = clientY;
 
-				var target = document.elementFromPoint(touchEvt.clientX, touchEvt.clientY);
-				var parent = target;
-				var i = touchDragOverListeners.length;
+                if (!supportCssPointerEvents) {
+                    _css(ghostEl, 'display', 'none');
+                }
 
-				if (target && target.shadowRoot) {
-					target = target.shadowRoot.elementFromPoint(touchEvt.clientX, touchEvt.clientY);
-					parent = target;
-				}
+                var target = document.elementFromPoint(clientX, clientY);
+                var parent = target;
+                var i = touchDragOverListeners.length;
 
-				if (parent) {
-					do {
-						if (parent[expando]) {
-							while (i--) {
-								touchDragOverListeners[i]({
-									clientX: touchEvt.clientX,
-									clientY: touchEvt.clientY,
-									target: target,
-									rootEl: parent
-								});
-							}
+                if (target && target.shadowRoot) {
+                    target = target.shadowRoot.elementFromPoint(clientX, clientY);
+                    parent = target;
+                }
 
-							break;
-						}
+                if (parent) {
+                    do {
+                        if (parent[expando]) {
+                            while (i--) {
+                                touchDragOverListeners[i]({
+                                    clientX: clientX,
+                                    clientY: clientY,
+                                    target: target,
+                                    rootEl: parent
+                                });
+                            }
 
-						target = parent; // store last element
-					}
-					/* jshint boss:true */
-					while (parent = parent.parentNode);
-				}
+                            break;
+                        }
 
-				if (!supportCssPointerEvents) {
-					_css(ghostEl, 'display', '');
-				}
-			}
-		},
+                        target = parent; // store last element
+                    }
+                        /* jshint boss:true */
+                    while (parent = parent.parentNode);
+                }
+
+                if (!supportCssPointerEvents) {
+                    _css(ghostEl, 'display', '');
+                }
+            }
+        },
 
 
 		_onTouchMove: function (/**TouchEvent*/evt) {
